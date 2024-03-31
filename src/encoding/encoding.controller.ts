@@ -6,6 +6,11 @@ import {
   Inject,
   Param,
   Post,
+  Headers,
+  HttpException,
+  HttpStatus,
+  Req,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { CreateEncodingDto } from './dtos/create-endoing.dto';
 import {
@@ -21,6 +26,7 @@ import { SaveEncodingResponseDto } from './dtos/save-encoding-response.dto';
 import { FindEncodingByIdResponseDto } from './dtos/find-encoding-by-id-response.dto';
 import { FindEncodingsResponseDto } from './dtos/find-encodings-response.dto';
 import { EventType, updateWebhookDto } from './dtos/update-webhook.dto';
+import { createHmac } from 'crypto';
 
 @Controller('encodings')
 export class EncodingController {
@@ -74,12 +80,33 @@ export class EncodingController {
   }
 
   @Post('/update-webhook')
-  async updateEncodingStatusWebHook(@Body() updateEvent: updateWebhookDto) {
-    console.log(updateEvent);
+  async updateEncodingStatusWebHook(
+    @Req() req: RawBodyRequest<Request>,
+    @Body() updateEvent: updateWebhookDto,
+    @Headers() headers,
+  ) {
+    const rawBody = req.rawBody;
+    const signature = headers['bitmovin-signature'];
+    const hash = createHmac('sha512', process.env.BITMOVING_WEBHOOK_SECRET_KEY)
+      .update(rawBody)
+      .digest('hex');
+
+    const isValid = signature === hash;
+
+    if (!isValid) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
     if (updateEvent.eventType === EventType.ENCODING_FINISHED) {
       await this.encodingService.updateEncoding(
         { foreignId: updateEvent.resourceId },
         { status: EncodingStatus.FINISHED },
+      );
+    }
+    if (updateEvent.eventType === EventType.ENCODING_ERROR) {
+      await this.encodingService.updateEncoding(
+        { foreignId: updateEvent.resourceId },
+        { status: EncodingStatus.Error },
       );
     }
   }

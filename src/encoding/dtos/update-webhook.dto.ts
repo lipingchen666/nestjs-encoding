@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 
 export enum EventType {
   ENCODING_FINISHED = 'ENCODING_FINISHED',
+  ENCODING_ERROR = 'ENCODING_ERROR',
 }
 export class updateWebhookDto {
   @IsString()

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import {
-  EncodingService,
-  encodingOption,
-  VideoOption,
-  videoStreamInfo,
   AudioOption,
   audioStreamInfo,
   EncodingJob,
-  SaveEncodingOption,
-  FindEncodingsOption,
-  UpdateOption,
+  encodingOption,
+  EncodingService,
   EncodingStatus,
+  FindEncodingsOption,
+  SaveEncodingOption,
+  UpdateOption,
+  VideoOption,
+  videoStreamInfo,
 } from './interfaces/encoding.service.interface';
 import BitmovinApi, {
   AacAudioConfiguration,
@@ -42,6 +42,7 @@ import BitmovinApi, {
   PresetConfiguration,
   S3Input,
   S3Output,
+  SignatureType,
   Sprite,
   StartEncodingRequest,
   Status,
@@ -54,8 +55,8 @@ import { isEmpty } from 'lodash';
 import * as Path from 'path';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  ENCODING_SCHEMA_NAME,
   Encoding as encodingSchema,
+  ENCODING_SCHEMA_NAME,
 } from './schemas/encoding.schema';
 import { Model } from 'mongoose';
 import WebhookHttpMethod from '@bitmovin/api-sdk/dist/models/WebhookHttpMethod';
@@ -717,6 +718,10 @@ export class BitMovinEncodingService implements EncodingService {
         {
           url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
           method: WebhookHttpMethod.POST,
+          signature: {
+            type: SignatureType.HMAC,
+            key: process.env.BITMOVING_WEBHOOK_SECRET_KEY,
+          },
         },
       );
     const sub2 =
@@ -725,10 +730,12 @@ export class BitMovinEncodingService implements EncodingService {
         {
           url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
           method: WebhookHttpMethod.POST,
+          signature: {
+            type: SignatureType.HMAC,
+            key: process.env.BITMOVING_WEBHOOK_SECRET_KEY,
+          },
         },
       );
-    console.log(sub);
-    console.log(sub2);
 
     return id;
   }
