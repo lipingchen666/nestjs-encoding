@@ -6,7 +6,34 @@ export interface EncodingService {
   generateEncodingOptions(body: CreateEncodingDto): encodingOption;
   saveEncoding(saveEncodingOption: SaveEncodingOption): Promise<EncodingJob>;
   findEncodingById(id: string): Promise<EncodingJob>;
+  findEncodings(findEncodingOption: FindEncodingsOption): Promise<EncodingJob>;
+  updateEncodingById(
+    id: string,
+    updateOption: UpdateOption,
+  ): Promise<EncodingJob>;
+  updateEncoding(
+    filters: FindEncodingsOption,
+    updateOption: UpdateOption,
+  ): Promise<EncodingJob>;
 }
+export enum EncodingStatus {
+  Submitted = 'SUBMITTED',
+  Started = 'STARTED',
+  Error = 'ERROR',
+  FINISHED = 'FINISHED',
+}
+
+export type UpdateOption = {
+  status: EncodingStatus;
+};
+
+export type FindEncodingsOption = {
+  userId?: string;
+  foreignId?: string;
+  thirdPartyEncoder?: string;
+  id?: string;
+  status?: string;
+};
 
 export type EncodingJob = {
   userId: string;

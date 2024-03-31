@@ -8,6 +8,9 @@ import {
   audioStreamInfo,
   EncodingJob,
   SaveEncodingOption,
+  FindEncodingsOption,
+  UpdateOption,
+  EncodingStatus,
 } from './interfaces/encoding.service.interface';
 import BitmovinApi, {
   AacAudioConfiguration,
@@ -55,6 +58,7 @@ import {
   Encoding as encodingSchema,
 } from './schemas/encoding.schema';
 import { Model } from 'mongoose';
+import WebhookHttpMethod from '@bitmovin/api-sdk/dist/models/WebhookHttpMethod';
 
 @Injectable()
 export class BitMovinEncodingService implements EncodingService {
@@ -199,7 +203,7 @@ export class BitMovinEncodingService implements EncodingService {
 
     const savingEncodingOption = {
       description: outPutKey,
-      status: 'started',
+      status: EncodingStatus.Started,
       foreignId: bitMovinEncodingId,
       thirdPartyEncoder: 'bitMovin',
       userId: encodingOptions.userId,
@@ -707,6 +711,25 @@ export class BitMovinEncodingService implements EncodingService {
     );
 
     //add code to subscribe to webhook
+    const sub =
+      await this.bitMovinClient.notifications.webhooks.encoding.encodings.finished.createByEncodingId(
+        encoding.id,
+        {
+          url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
+          method: WebhookHttpMethod.POST,
+        },
+      );
+    const sub2 =
+      await this.bitMovinClient.notifications.webhooks.encoding.encodings.error.createByEncodingId(
+        encoding.id,
+        {
+          url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
+          method: WebhookHttpMethod.POST,
+        },
+      );
+    console.log(sub);
+    console.log(sub2);
+
     return id;
   }
   async saveEncoding(
@@ -727,6 +750,56 @@ export class BitMovinEncodingService implements EncodingService {
 
   async findEncodingById(id: string): Promise<EncodingJob> {
     const encodingDoc = await this.encodingModel.findById(id);
+
+    return {
+      id: encodingDoc._id.toString(),
+      userId: encodingDoc.userId,
+      status: encodingDoc.status,
+      description: encodingDoc.description,
+      foreignId: encodingDoc.foreignId,
+      thirdPartyEncoder: encodingDoc.thirdPartyEncoder,
+    };
+  }
+
+  async findEncodings(
+    findEncodingsOption: FindEncodingsOption,
+  ): Promise<EncodingJob> {
+    const encodingDoc = await this.encodingModel.findOne(findEncodingsOption);
+
+    return {
+      id: encodingDoc._id.toString(),
+      userId: encodingDoc.userId,
+      status: encodingDoc.status,
+      description: encodingDoc.description,
+      foreignId: encodingDoc.foreignId,
+      thirdPartyEncoder: encodingDoc.thirdPartyEncoder,
+    };
+  }
+
+  async updateEncodingById(id: string, updateOption: UpdateOption) {
+    const encodingDoc = await this.encodingModel.findOneAndUpdate(
+      { _id: id },
+      updateOption,
+    );
+
+    return {
+      id: encodingDoc._id.toString(),
+      userId: encodingDoc.userId,
+      status: encodingDoc.status,
+      description: encodingDoc.description,
+      foreignId: encodingDoc.foreignId,
+      thirdPartyEncoder: encodingDoc.thirdPartyEncoder,
+    };
+  }
+
+  async updateEncoding(
+    filters: FindEncodingsOption,
+    updateOption: UpdateOption,
+  ) {
+    const encodingDoc = await this.encodingModel.findOneAndUpdate(
+      filters,
+      updateOption,
+    );
 
     return {
       id: encodingDoc._id.toString(),

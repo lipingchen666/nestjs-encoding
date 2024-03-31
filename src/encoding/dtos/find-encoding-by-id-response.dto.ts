@@ -1,4 +1,5 @@
 import { Expose, Exclude } from 'class-transformer';
+import { EncodingStatus } from '../interfaces/encoding.service.interface';
 
 @Exclude()
 export class FindEncodingByIdResponseDto {
@@ -7,7 +8,7 @@ export class FindEncodingByIdResponseDto {
   readonly description: string;
 
   @Expose()
-  readonly status: string;
+  readonly status: EncodingStatus;
 
   @Expose()
   readonly foreignId: string;

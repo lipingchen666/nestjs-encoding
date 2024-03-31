@@ -1,8 +1,8 @@
-import { Expose, Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { EncodingStatus } from '../interfaces/encoding.service.interface';
 
 @Exclude()
-export class SaveEncodingResponseDto {
+export class EncodingJobDto {
   @Expose()
   readonly id: string;
   readonly description: string;
