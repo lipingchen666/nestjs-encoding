@@ -47,6 +47,17 @@ export class EncodingController {
     return plainToInstance(EncodeResponseDto, encodingJob);
   }
 
+  @Post('/queues/encoding')
+  @HttpCode(200)
+  async submitEncode(
+    @Body() createEncodingDto: CreateEncodingDto,
+  ): Promise<void> {
+    const encodingOptions =
+      this.encodingService.generateEncodingOptions(createEncodingDto);
+
+    this.encodingService.submitEncoding(encodingOptions);
+  }
+
   @Get()
   async getEncodings() {
     return ['cool'];

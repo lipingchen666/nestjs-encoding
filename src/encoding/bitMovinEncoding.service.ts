@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import {
   AudioOption,
   audioStreamInfo,
+  ENCODING_QUEUE,
   EncodingJob,
-  encodingOption,
+  EncodingOption,
   EncodingService,
   EncodingStatus,
   FindEncodingsOption,
@@ -60,6 +61,8 @@ import {
 } from './schemas/encoding.schema';
 import { Model } from 'mongoose';
 import WebhookHttpMethod from '@bitmovin/api-sdk/dist/models/WebhookHttpMethod';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class BitMovinEncodingService implements EncodingService {
@@ -70,12 +73,17 @@ export class BitMovinEncodingService implements EncodingService {
     private bitMovinClient: BitmovinApi,
     @InjectModel(ENCODING_SCHEMA_NAME)
     private encodingModel: Model<encodingSchema>,
+    @InjectQueue(ENCODING_QUEUE) private encodingQueue: Queue,
   ) {
     this.defaultInputBucket = 'nextjs-template-bucket';
     this.defaultOutputBucket = 'nextjs-template-output-bucket';
   }
+
+  async submitEncoding(encodingOptions: EncodingOption) {
+    await this.encodingQueue.add(encodingOptions);
+  }
   // bucket: string = "nextjs-template-bucket", key: string, outPutBucket: string = "s3://nextjs-template-output-bucket", outPutKey: string
-  async encode(encodingOptions: encodingOption): Promise<EncodingJob> {
+  async encode(encodingOptions: EncodingOption): Promise<EncodingJob> {
     const inputBucket = encodingOptions.inputBucket;
     const inputKey = encodingOptions.fileName;
     const outputBucket = encodingOptions.outputBucket;
@@ -244,7 +252,7 @@ export class BitMovinEncodingService implements EncodingService {
     return clientAudioOptions;
   }
 
-  generateEncodingOptions(body: any): encodingOption {
+  generateEncodingOptions(body: any): EncodingOption {
     const sanitizedVideoOptions = this.getVideoEncodingOption(
       body.videoOptions,
       body.fileInfo?.videoStream,
@@ -716,7 +724,7 @@ export class BitMovinEncodingService implements EncodingService {
       await this.bitMovinClient.notifications.webhooks.encoding.encodings.finished.createByEncodingId(
         encoding.id,
         {
-          url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
+          url: 'https://8ed6-2600-1700-3881-6cf0-79eb-6308-d8ab-8f90.ngrok-free.app/encodings/update-webhook',
           method: WebhookHttpMethod.POST,
           signature: {
             type: SignatureType.HMAC,

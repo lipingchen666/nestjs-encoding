@@ -1,9 +1,10 @@
 import { CreateEncodingDto } from '../dtos/create-endoing.dto';
 
 export const ENCODING_SERVICE = 'ENCODING SERVICE';
+export const ENCODING_QUEUE = 'ENCODING_QUEUE';
 export interface EncodingService {
-  encode(encodingOption: encodingOption): Promise<EncodingJob>;
-  generateEncodingOptions(body: CreateEncodingDto): encodingOption;
+  encode(encodingOption: EncodingOption): Promise<EncodingJob>;
+  generateEncodingOptions(body: CreateEncodingDto): EncodingOption;
   saveEncoding(saveEncodingOption: SaveEncodingOption): Promise<EncodingJob>;
   findEncodingById(id: string): Promise<EncodingJob>;
   findEncodings(findEncodingOption: FindEncodingsOption): Promise<EncodingJob>;
@@ -15,6 +16,7 @@ export interface EncodingService {
     filters: FindEncodingsOption,
     updateOption: UpdateOption,
   ): Promise<EncodingJob>;
+  submitEncoding(encodingOption: EncodingOption): void;
 }
 export enum EncodingStatus {
   Submitted = 'SUBMITTED',
@@ -52,7 +54,7 @@ export type SaveEncodingOption = {
   userId: string;
 };
 
-export type encodingOption = {
+export type EncodingOption = {
   fileName: string;
   fileInfo: fileInfo;
   inputBucket: string;

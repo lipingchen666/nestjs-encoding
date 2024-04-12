@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
 import { BitMovinEncodingService } from './bitMovinEncoding.service';
 import { EncodingController } from './encoding.controller';
-import { ENCODING_SERVICE } from './interfaces/encoding.service.interface';
+import {
+  ENCODING_QUEUE,
+  ENCODING_SERVICE,
+} from './interfaces/encoding.service.interface';
 import BitmovinApi, { ConsoleLogger } from '@bitmovin/api-sdk';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   ENCODING_SCHEMA_NAME,
   EncodingSchema,
 } from './schemas/encoding.schema';
+import { BullModule } from '@nestjs/bull';
+import { EncodingConsumer } from './encoding.comsumer';
 
 const bitMovinClient = new BitmovinApi({
   apiKey:
@@ -19,6 +24,15 @@ const bitMovinClient = new BitmovinApi({
     MongooseModule.forFeature([
       { name: ENCODING_SCHEMA_NAME, schema: EncodingSchema },
     ]),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: 6380,
+      },
+    }),
+    BullModule.registerQueue({
+      name: ENCODING_QUEUE,
+    }),
   ],
   providers: [
     {
@@ -30,6 +44,7 @@ const bitMovinClient = new BitmovinApi({
       provide: BitmovinApi,
       useValue: bitMovinClient,
     },
+    EncodingConsumer,
   ],
   controllers: [EncodingController],
 })
