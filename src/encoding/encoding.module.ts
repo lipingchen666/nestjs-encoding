@@ -27,7 +27,7 @@ const bitMovinClient = new BitmovinApi({
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST,
-        port: 6379,
+        port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
     BullModule.registerQueue({
