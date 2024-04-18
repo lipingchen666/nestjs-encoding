@@ -724,7 +724,7 @@ export class BitMovinEncodingService implements EncodingService {
       await this.bitMovinClient.notifications.webhooks.encoding.encodings.finished.createByEncodingId(
         encoding.id,
         {
-          url: 'https://8ed6-2600-1700-3881-6cf0-79eb-6308-d8ab-8f90.ngrok-free.app/encodings/update-webhook',
+          url: `${process.env.NEST_JS_WEB_HOOK_BASE_URL}/encodings/update-webhook`,
           method: WebhookHttpMethod.POST,
           signature: {
             type: SignatureType.HMAC,
@@ -736,7 +736,7 @@ export class BitMovinEncodingService implements EncodingService {
       await this.bitMovinClient.notifications.webhooks.encoding.encodings.error.createByEncodingId(
         encoding.id,
         {
-          url: 'https://278b-100-15-220-37.ngrok-free.app/encodings/update-webhook',
+          url: `${process.env.NEST_JS_WEB_HOOK_BASE_URL}/encodings/update-webhook`,
           method: WebhookHttpMethod.POST,
           signature: {
             type: SignatureType.HMAC,
