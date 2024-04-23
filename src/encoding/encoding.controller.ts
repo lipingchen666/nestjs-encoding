@@ -51,11 +51,13 @@ export class EncodingController {
   @HttpCode(200)
   async submitEncode(
     @Body() createEncodingDto: CreateEncodingDto,
-  ): Promise<void> {
+  ): Promise<EncodeResponseDto> {
     const encodingOptions =
       this.encodingService.generateEncodingOptions(createEncodingDto);
 
-    this.encodingService.submitEncoding(encodingOptions);
+    const encodingJob =
+      await this.encodingService.submitEncoding(encodingOptions);
+    return plainToInstance(EncodeResponseDto, encodingJob);
   }
 
   @Get()

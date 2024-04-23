@@ -80,7 +80,23 @@ export class BitMovinEncodingService implements EncodingService {
   }
 
   async submitEncoding(encodingOptions: EncodingOption) {
-    await this.encodingQueue.add(encodingOptions);
+    const description = encodingOptions.outputFileName
+      ? encodingOptions.outputFileName
+      : encodingOptions.fileName;
+    const savingEncodingOption = {
+      description: description,
+      status: EncodingStatus.Submitted,
+      thirdPartyEncoder: 'bitMovin',
+      userId: encodingOptions.userId,
+    };
+    const encodingJob = await this.saveEncoding(savingEncodingOption);
+    const encodingOptionWithId = {
+      ...encodingOptions,
+      id: encodingJob.id,
+    };
+    await this.encodingQueue.add(encodingOptionWithId);
+
+    return encodingJob;
   }
   // bucket: string = "nextjs-template-bucket", key: string, outPutBucket: string = "s3://nextjs-template-output-bucket", outPutKey: string
   async encode(encodingOptions: EncodingOption): Promise<EncodingJob> {
@@ -218,7 +234,12 @@ export class BitMovinEncodingService implements EncodingService {
       userId: encodingOptions.userId,
     };
 
-    return await this.saveEncoding(savingEncodingOption);
+    // return await this.updateEncodingById(savingEncodingOption);
+    return await this.updateEncodingById(
+      encodingOptions.id,
+      savingEncodingOption,
+      true,
+    );
   }
   getVideoEncodingOption(
     clientVideoOptions: VideoOption[] | undefined,
@@ -791,10 +812,15 @@ export class BitMovinEncodingService implements EncodingService {
     };
   }
 
-  async updateEncodingById(id: string, updateOption: UpdateOption) {
+  async updateEncodingById(
+    id: string,
+    updateOption: UpdateOption,
+    upsert = false,
+  ) {
     const encodingDoc = await this.encodingModel.findOneAndUpdate(
       { _id: id },
       updateOption,
+      { upsert },
     );
 
     return {
@@ -810,7 +836,7 @@ export class BitMovinEncodingService implements EncodingService {
   async updateEncoding(
     filters: FindEncodingsOption,
     updateOption: UpdateOption,
-  ) {
+  ): Promise<EncodingJob> {
     const encodingDoc = await this.encodingModel.findOneAndUpdate(
       filters,
       updateOption,

@@ -16,7 +16,7 @@ export interface EncodingService {
     filters: FindEncodingsOption,
     updateOption: UpdateOption,
   ): Promise<EncodingJob>;
-  submitEncoding(encodingOption: EncodingOption): void;
+  submitEncoding(encodingOption: EncodingOption): Promise<EncodingJob>;
 }
 export enum EncodingStatus {
   Submitted = 'SUBMITTED',
@@ -49,7 +49,7 @@ export type EncodingJob = {
 export type SaveEncodingOption = {
   description: string;
   status: string;
-  foreignId: string;
+  foreignId?: string;
   thirdPartyEncoder: string;
   userId: string;
 };
@@ -67,6 +67,7 @@ export type EncodingOption = {
   generateThumbnailTrack?: boolean;
   drm?: boolean;
   userId: string;
+  id?: string;
 };
 export interface fileInfo {
   hasVideo: boolean;

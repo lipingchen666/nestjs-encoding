@@ -3,4 +3,5 @@ export class EncodeResponseDto {
   foreignId: string;
   thirdPartyEncoder: string;
   id: string;
+  status: string;
 }
