@@ -12,6 +12,7 @@ async function bootstrap() {
     .setDescription('Encoding Api Using Redis Queue')
     .setVersion('1.0')
     .addTag('encodings')
+    .addApiKey({ type: 'apiKey', name: 'Api-Key', in: 'header' }, 'Api-Key')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

@@ -13,7 +13,7 @@ import {
   RawBodyRequest,
   Query,
 } from '@nestjs/common';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { CreateEncodingDto } from './dtos/create-endoing.dto';
 import {
   ENCODING_SERVICE,
@@ -30,6 +30,7 @@ import { FindEncodingsResponseDto } from './dtos/find-encodings-response.dto';
 import { EventType, updateWebhookDto } from './dtos/update-webhook.dto';
 import { createHmac } from 'crypto';
 
+@ApiSecurity('Api-Key')
 @Controller('encodings')
 export class EncodingController {
   constructor(
@@ -78,10 +79,22 @@ export class EncodingController {
   }
 
   @Get('/users/:userId')
+  @ApiQuery({
+    name: 'limit',
+    description: 'The maximum number of encodings to return',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'cursor',
+    description: 'cursor to offset',
+    required: false,
+    type: String,
+  })
   async getEncodingsByUserId(
-    @Query('limit') limit: number,
-    @Query('cursor') cursor: string,
     @Param('userId') userId: string,
+    @Query('limit') limit?: number,
+    @Query('cursor') cursor?: string,
   ): Promise<FindEncodingsResponseDto> {
     const encodingJobObject = await this.encodingService.findEncodings(
       {
