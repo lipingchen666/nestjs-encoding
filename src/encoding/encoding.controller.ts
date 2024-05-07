@@ -11,7 +11,9 @@ import {
   HttpStatus,
   Req,
   RawBodyRequest,
+  Query,
 } from '@nestjs/common';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { CreateEncodingDto } from './dtos/create-endoing.dto';
 import {
   ENCODING_SERVICE,
@@ -34,6 +36,8 @@ export class EncodingController {
     @Inject(ENCODING_SERVICE)
     private readonly encodingService: EncodingService,
   ) {}
+
+  @ApiExcludeEndpoint()
   @Post('/encode')
   @HttpCode(200)
   async encode(
@@ -60,6 +64,7 @@ export class EncodingController {
     return plainToInstance(EncodeResponseDto, encodingJob);
   }
 
+  @ApiExcludeEndpoint()
   @Get()
   async getEncodings() {
     return ['cool'];
@@ -73,12 +78,23 @@ export class EncodingController {
   }
 
   @Get('/users/:userId')
-  async getEncodingsByUserId(@Param('userId') userId: string) {
-    const encodingJob = await this.encodingService.findEncodings({ userId });
+  async getEncodingsByUserId(
+    @Query('limit') limit: number,
+    @Query('cursor') cursor: string,
+    @Param('userId') userId: string,
+  ): Promise<FindEncodingsResponseDto> {
+    const encodingJobObject = await this.encodingService.findEncodings(
+      {
+        userId,
+      },
+      cursor,
+      limit,
+    );
 
-    return plainToInstance(FindEncodingsResponseDto, encodingJob);
+    return plainToInstance(FindEncodingsResponseDto, encodingJobObject);
   }
 
+  @ApiExcludeEndpoint()
   @Post()
   async saveEncoding(
     @Body() saveEncodingDto: SaveEncodingDto,

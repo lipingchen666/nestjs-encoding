@@ -4,6 +4,7 @@ import {
   audioStreamInfo,
   ENCODING_QUEUE,
   EncodingJob,
+  EncodingJobsResponseObject,
   EncodingOption,
   EncodingService,
   EncodingStatus,
@@ -799,16 +800,41 @@ export class BitMovinEncodingService implements EncodingService {
 
   async findEncodings(
     findEncodingsOption: FindEncodingsOption,
-  ): Promise<EncodingJob> {
-    const encodingDoc = await this.encodingModel.findOne(findEncodingsOption);
+    cursor: string,
+    limit: number = 10,
+  ): Promise<EncodingJobsResponseObject> {
+    const query = {
+      ...findEncodingsOption,
+    };
+
+    if (cursor) {
+      query['_id'] = { $gt: cursor };
+    }
+
+    const encodingDocs = await this.encodingModel
+      .find(query)
+      .sort({
+        _id: 1,
+      })
+      .limit(limit);
+
+    const results = encodingDocs.map((doc) => ({
+      id: doc._id.toString(),
+      userId: doc.userId,
+      status: doc.status,
+      description: doc.description,
+      foreignId: doc.foreignId,
+      thirdPartyEncoder: doc.thirdPartyEncoder,
+    }));
+
+    const prevCursor = cursor && results.length > 0 ? results[0].id : null;
+    const currCursor =
+      results.length > 0 ? results[results.length - 1].id : null;
 
     return {
-      id: encodingDoc._id.toString(),
-      userId: encodingDoc.userId,
-      status: encodingDoc.status,
-      description: encodingDoc.description,
-      foreignId: encodingDoc.foreignId,
-      thirdPartyEncoder: encodingDoc.thirdPartyEncoder,
+      prevCursor,
+      currCursor,
+      results,
     };
   }
 

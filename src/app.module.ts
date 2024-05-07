@@ -18,15 +18,6 @@ import { EncodingConsumer } from './encoding/encoding.comsumer';
     MongooseModule.forRoot(process.env.ATLAS_MONGO_CONNECTION_STRING, {
       dbName: 'encoding',
     }),
-    // BullModule.forRoot({
-    //   redis: {
-    //     host: process.env.REDIS_HOST,
-    //     port: Number(process.env.REDIS_PORT),
-    //   },
-    // }),
-    // BullModule.registerQueue({
-    //   name: ENCODING_QUEUE,
-    // }),
   ],
 })
 export class AppModule {}

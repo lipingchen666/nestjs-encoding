@@ -7,7 +7,11 @@ export interface EncodingService {
   generateEncodingOptions(body: CreateEncodingDto): EncodingOption;
   saveEncoding(saveEncodingOption: SaveEncodingOption): Promise<EncodingJob>;
   findEncodingById(id: string): Promise<EncodingJob>;
-  findEncodings(findEncodingOption: FindEncodingsOption): Promise<EncodingJob>;
+  findEncodings(
+    findEncodingOption: FindEncodingsOption,
+    cursor?: string,
+    limit?: number,
+  ): Promise<EncodingJobsResponseObject>;
   updateEncodingById(
     id: string,
     updateOption: UpdateOption,
@@ -44,6 +48,12 @@ export type EncodingJob = {
   id: string;
   status: string;
   description: string;
+};
+
+export type EncodingJobsResponseObject = {
+  results: EncodingJob[];
+  prevCursor: string;
+  currCursor: string;
 };
 
 export type SaveEncodingOption = {
